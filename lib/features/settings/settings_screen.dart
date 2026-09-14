@@ -1,0 +1,278 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../../app/theme.dart';
+import 'providers/settings_provider.dart';
+
+class SettingsScreen extends ConsumerWidget {
+  const SettingsScreen({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final settings = ref.watch(settingsProvider);
+    final settingsNotifier = ref.read(settingsProvider.notifier);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    final textColor = isDark ? AppTheme.darkTextPrimary : AppTheme.lightTextPrimary;
+    final secondaryTextColor =
+        isDark ? AppTheme.darkTextSecondary : AppTheme.lightTextSecondary;
+    final elevatedBg =
+        isDark ? AppTheme.darkBgElevated : AppTheme.lightBgElevated;
+    final borderColor =
+        isDark ? AppTheme.darkBorderHairline : AppTheme.lightBorderHairline;
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Settings'),
+      ),
+      body: ListView(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        children: [
+          // APPEARANCE SECTION
+          _SectionHeader(title: 'appearance', color: secondaryTextColor),
+          const SizedBox(height: 8),
+          Container(
+            decoration: BoxDecoration(
+              color: elevatedBg,
+              borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+              border: Border.all(color: borderColor),
+            ),
+            padding: const EdgeInsets.all(12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Theme',
+                      style: TextStyle(
+                        fontSize: 15,
+                        color: textColor,
+                        fontWeight: FontWeight.normal,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                SizedBox(
+                  width: double.infinity,
+                  child: SegmentedButton<ThemeMode>(
+                    segments: const [
+                      ButtonSegment<ThemeMode>(
+                        value: ThemeMode.light,
+                        label: Text('Light', style: TextStyle(fontSize: 13)),
+                      ),
+                      ButtonSegment<ThemeMode>(
+                        value: ThemeMode.dark,
+                        label: Text('Dark', style: TextStyle(fontSize: 13)),
+                      ),
+                      ButtonSegment<ThemeMode>(
+                        value: ThemeMode.system,
+                        label: Text('System', style: TextStyle(fontSize: 13)),
+                      ),
+                    ],
+                    selected: {settings.themeMode},
+                    onSelectionChanged: (newSelection) {
+                      settingsNotifier.setThemeMode(newSelection.first);
+                    },
+                    style: ButtonStyle(
+                      shape: WidgetStatePropertyAll(
+                        RoundedRectangleBorder(
+                          borderRadius:
+                              BorderRadius.circular(AppTheme.radiusSmall),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 24),
+
+          // CAMERA SECTION
+          _SectionHeader(title: 'camera', color: secondaryTextColor),
+          const SizedBox(height: 8),
+          Container(
+            decoration: BoxDecoration(
+              color: elevatedBg,
+              borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+              border: Border.all(color: borderColor),
+            ),
+            child: Column(
+              children: [
+                // Grid Lines Toggle
+                SwitchListTile.adaptive(
+                  value: settings.showGridLines,
+                  onChanged: (_) => settingsNotifier.toggleGridLines(),
+                  title: Text(
+                    'Grid lines (rule of thirds)',
+                    style: TextStyle(fontSize: 15, color: textColor),
+                  ),
+                  subtitle: Text(
+                    'Show alignment guides on viewfinder',
+                    style: TextStyle(fontSize: 12, color: secondaryTextColor),
+                  ),
+                  activeTrackColor: textColor,
+                  contentPadding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+                ),
+                Divider(color: borderColor, height: 1),
+
+                // Mirror Front Camera
+                SwitchListTile.adaptive(
+                  value: settings.mirrorFrontCamera,
+                  onChanged: (_) =>
+                      settingsNotifier.toggleMirrorFrontCamera(),
+                  title: Text(
+                    'Mirror front camera preview',
+                    style: TextStyle(fontSize: 15, color: textColor),
+                  ),
+                  subtitle: Text(
+                    'Match overlay orientation to selfie feed',
+                    style: TextStyle(fontSize: 12, color: secondaryTextColor),
+                  ),
+                  activeTrackColor: textColor,
+                  contentPadding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+                ),
+                Divider(color: borderColor, height: 1),
+
+                // Save to system gallery
+                SwitchListTile.adaptive(
+                  value: settings.saveToSystemGallery,
+                  onChanged: (_) =>
+                      settingsNotifier.toggleSaveToSystemGallery(),
+                  title: Text(
+                    'Save to device photos',
+                    style: TextStyle(fontSize: 15, color: textColor),
+                  ),
+                  subtitle: Text(
+                    settings.saveToSystemGallery
+                        ? 'Saved to camera roll and in-app gallery'
+                        : 'Saved to in-app gallery only',
+                    style: TextStyle(fontSize: 12, color: secondaryTextColor),
+                  ),
+                  activeTrackColor: textColor,
+                  contentPadding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+                ),
+                Divider(color: borderColor, height: 1),
+
+                // Default Opacity Slider
+                Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Default overlay opacity',
+                            style: TextStyle(fontSize: 15, color: textColor),
+                          ),
+                          Text(
+                            '${(settings.defaultOpacity * 100).round()}%',
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              color: secondaryTextColor,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 6),
+                      SliderTheme(
+                        data: SliderTheme.of(context).copyWith(
+                          trackHeight: 2,
+                          thumbShape: const RoundSliderThumbShape(
+                              enabledThumbRadius: 6),
+                        ),
+                        child: Slider(
+                          value: settings.defaultOpacity,
+                          min: 0.1,
+                          max: 0.9,
+                          divisions: 16,
+                          onChanged: (val) {
+                            settingsNotifier.setDefaultOpacity(val);
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 24),
+
+          // ABOUT SECTION
+          _SectionHeader(title: 'about', color: secondaryTextColor),
+          const SizedBox(height: 8),
+          Container(
+            decoration: BoxDecoration(
+              color: elevatedBg,
+              borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+              border: Border.all(color: borderColor),
+            ),
+            child: Column(
+              children: [
+                ListTile(
+                  title: Text('Version',
+                      style: TextStyle(fontSize: 15, color: textColor)),
+                  trailing: Text(
+                    '1.0.0 (build 1)',
+                    style: TextStyle(fontSize: 13, color: secondaryTextColor),
+                  ),
+                ),
+                Divider(color: borderColor, height: 1),
+                ListTile(
+                  title: Text('Licenses',
+                      style: TextStyle(fontSize: 15, color: textColor)),
+                  trailing: Icon(Icons.chevron_right,
+                      size: 18, color: secondaryTextColor),
+                  onTap: () {
+                    showLicensePage(
+                      context: context,
+                      applicationName: 'Pose Me!',
+                      applicationVersion: '1.0.0',
+                    );
+                  },
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 32),
+        ],
+      ),
+    );
+  }
+}
+
+class _SectionHeader extends StatelessWidget {
+  final String title;
+  final Color color;
+
+  const _SectionHeader({required this.title, required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 4),
+      child: Text(
+        title,
+        style: TextStyle(
+          color: color,
+          fontSize: 13,
+          fontWeight: FontWeight.w500,
+          letterSpacing: 0.2,
+        ),
+      ),
+    );
+  }
+}

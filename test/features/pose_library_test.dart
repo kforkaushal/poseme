@@ -121,6 +121,8 @@ void main() {
       final apiResponse = {
         'id': 55555,
         'photographer': 'Studio Pro',
+        'width': 2000,
+        'height': 3000,
         'src': {
           'medium': 'https://images.pexels.com/photos/55555/medium.jpg',
           'portrait': 'https://images.pexels.com/photos/55555/portrait.jpg',
@@ -131,8 +133,44 @@ void main() {
       final photo = PexelsPhoto.fromJson(apiResponse);
       expect(photo.id, 55555);
       expect(photo.photographer, 'Studio Pro');
+      expect(photo.width, 2000);
+      expect(photo.height, 3000);
+      expect(photo.aspectRatio, closeTo(2 / 3, 0.01));
       expect(photo.thumbnailUrl, contains('medium'));
       expect(photo.overlayUrl, contains('portrait'));
+    });
+
+    test('PoseReference.fromGallery creates valid local pose reference', () {
+      final galleryPose = PoseReference.fromGallery(
+        filePath: '/data/user/0/com.example/test_picked.jpg',
+        width: 1080,
+        height: 1920,
+      );
+
+      expect(galleryPose.id, startsWith('gallery_'));
+      expect(galleryPose.name, 'From Gallery');
+      expect(galleryPose.localFilePath, '/data/user/0/com.example/test_picked.jpg');
+      expect(galleryPose.isLocalImage, true);
+      expect(galleryPose.isNetworkImage, false);
+      expect(galleryPose.skipGrayscale, true);
+      expect(galleryPose.aspectRatio, closeTo(1080 / 1920, 0.01));
+    });
+
+    test('PoseReference clamps aspect ratio within aesthetic limits', () {
+      final widePose = PoseReference.fromGallery(
+        filePath: '/test.jpg',
+        width: 4000,
+        height: 1000,
+      );
+      expect(widePose.aspectRatio, 1.4);
+
+      final tallPose = PoseReference.fromGallery(
+        filePath: '/test.jpg',
+        width: 100,
+        height: 4000,
+      );
+      expect(widePose.aspectRatio, 1.4);
+      expect(tallPose.aspectRatio, 0.55);
     });
   });
 }

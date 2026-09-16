@@ -3,8 +3,12 @@ import 'package:flutter/material.dart';
 class AppTheme {
   AppTheme._();
 
-  // Corner radius standard across the app
+  // Corner radius standards:
+  // - radiusSmall / radiusDefault (4.0): Viewfinder chrome, bottom sheets, buttons, dialogs
+  // - radiusLibrary (16.0): Exclusively for Pose Library grid cards for a tactile, photo-browsing aesthetic
   static const double radiusSmall = 4.0;
+  static const double radiusDefault = 4.0;
+  static const double radiusLibrary = 16.0;
   static final BorderRadius borderRadius = BorderRadius.circular(radiusSmall);
 
   // Light Mode Palette

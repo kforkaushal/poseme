@@ -8,6 +8,7 @@ import '../settings/providers/settings_provider.dart';
 import '../settings/settings_screen.dart';
 import 'providers/camera_provider.dart';
 import 'widgets/camera_controls.dart';
+import 'widgets/camera_crosshair.dart';
 import 'widgets/camera_grid_lines.dart';
 import 'widgets/camera_permission_view.dart';
 import 'widgets/camera_preview_widget.dart';
@@ -45,7 +46,7 @@ class CameraScreen extends ConsumerWidget {
               },
             ),
             IconButton(
-              icon: const Icon(Icons.accessibility_new_rounded),
+              icon: const Icon(Icons.crop_free_rounded),
               tooltip: 'Browse Poses',
               onPressed: () {
                 PoseLibrarySheet.show(context);
@@ -87,10 +88,14 @@ class CameraScreen extends ConsumerWidget {
             CameraPreviewWidget(
               controller: cameraNotifier.controller,
               isInitialized: cameraState.isInitialized,
+              aspectRatioMode: cameraState.aspectRatioMode,
             ),
 
             // 2. Rule of Thirds Grid Lines (if enabled)
             if (settings.showGridLines) const CameraGridLines(),
+
+            // 2b. Center Crosshair (if enabled)
+            if (settings.showCrosshair) const CameraCrosshair(),
 
             // 3. Grayscale Pose Overlay Layer
             const OverlayLayer(),

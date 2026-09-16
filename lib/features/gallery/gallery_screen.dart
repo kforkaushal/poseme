@@ -222,7 +222,7 @@ class _PhotoDetailView extends ConsumerWidget {
           style: const TextStyle(fontSize: 16, color: Colors.white),
         ),
         actions: [
-          if (photo.poseAssetPath != null)
+          if (photo.hasReferenceImage)
             IconButton(
               icon: const Icon(Icons.compare_arrows_rounded, color: Colors.white),
               tooltip: 'Compare with Pose Guide',

@@ -27,6 +27,31 @@ void main() {
       expect(fromMap.poseAssetPath, photo.poseAssetPath);
       expect(fromMap.poseName, photo.poseName);
       expect(fromMap.isFrontCamera, photo.isFrontCamera);
+      expect(fromMap.hasReferenceImage, true);
+    });
+
+    test('Serializes to and from Map with network and local pose references', () {
+      final now = DateTime.now();
+      final pexelsPhoto = CapturedPhoto(
+        id: 'net_1',
+        filePath: '/test/net.jpg',
+        createdAt: now,
+        poseNetworkUrl: 'https://images.pexels.com/photos/123/test.jpg',
+        poseName: 'Pexels Model',
+      );
+      final pexelsRoundtrip = CapturedPhoto.fromMap(pexelsPhoto.toMap());
+      expect(pexelsRoundtrip.poseNetworkUrl, 'https://images.pexels.com/photos/123/test.jpg');
+      expect(pexelsRoundtrip.hasReferenceImage, true);
+
+      final localPhoto = CapturedPhoto(
+        id: 'local_1',
+        filePath: '/test/loc.jpg',
+        createdAt: now,
+        poseLocalFilePath: '/storage/gallery/pose.jpg',
+      );
+      final localRoundtrip = CapturedPhoto.fromMap(localPhoto.toMap());
+      expect(localRoundtrip.poseLocalFilePath, '/storage/gallery/pose.jpg');
+      expect(localRoundtrip.hasReferenceImage, true);
     });
 
     test('Serializes to and from JSON string correctly', () {
@@ -44,6 +69,7 @@ void main() {
       expect(fromJson.filePath, '/test/path.jpg');
       expect(fromJson.poseId, isNull);
       expect(fromJson.isFrontCamera, false);
+      expect(fromJson.hasReferenceImage, false);
     });
   });
 }

@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -22,7 +24,10 @@ class _OverlayLayerState extends ConsumerState<OverlayLayer> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     final pose = ref.read(overlayProvider).selectedPose;
-    if (pose != null && !pose.isNetworkImage) {
+    if (pose != null &&
+        !pose.isNetworkImage &&
+        !pose.isLocalImage &&
+        pose.assetPath.isNotEmpty) {
       precacheImage(AssetImage(pose.assetPath), context);
     }
   }
@@ -37,9 +42,57 @@ class _OverlayLayerState extends ConsumerState<OverlayLayer> {
     }
 
     // Precache asset images when pose changes
-    if (!pose.isNetworkImage) {
+    if (!pose.isNetworkImage &&
+        !pose.isLocalImage &&
+        pose.assetPath.isNotEmpty) {
       precacheImage(AssetImage(pose.assetPath), context);
     }
+
+    // Build raw image widget
+    Widget rawImage;
+    if (pose.isLocalImage && pose.localFilePath != null) {
+      rawImage = Image.file(
+        File(pose.localFilePath!),
+        fit: BoxFit.contain,
+        filterQuality: FilterQuality.medium,
+      );
+    } else if (pose.isNetworkImage) {
+      rawImage = CachedNetworkImage(
+        imageUrl: pose.networkOverlayUrl!,
+        fit: BoxFit.contain,
+        filterQuality: FilterQuality.medium,
+        placeholder: (context, url) => const SizedBox(
+          width: 48,
+          height: 48,
+          child: Center(
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              color: Colors.white38,
+            ),
+          ),
+        ),
+        errorWidget: (context, url, error) => const Icon(
+          Icons.broken_image_outlined,
+          color: Colors.white38,
+          size: 48,
+        ),
+      );
+    } else {
+      rawImage = Image.asset(
+        pose.assetPath,
+        fit: BoxFit.contain,
+        filterQuality: FilterQuality.medium,
+        gaplessPlayback: true,
+      );
+    }
+
+    // Apply grayscale filter only if not skipped (user gallery images stay full color)
+    final imageDisplay = pose.skipGrayscale
+        ? rawImage
+        : ColorFiltered(
+            colorFilter: const ColorFilter.matrix(AppTheme.grayscaleMatrix),
+            child: rawImage,
+          );
 
     return GestureDetector(
       behavior: HitTestBehavior.translucent,
@@ -64,7 +117,7 @@ class _OverlayLayerState extends ConsumerState<OverlayLayer> {
       child: Stack(
         fit: StackFit.expand,
         children: [
-          // Ghosted Pose Image with Interactive Transform (Enforced Grayscale)
+          // Ghosted Pose Image with Interactive Transform
           Center(
             child: Transform(
               alignment: Alignment.center,
@@ -86,102 +139,80 @@ class _OverlayLayerState extends ConsumerState<OverlayLayer> {
                 ),
               child: Opacity(
                 opacity: overlayState.opacity,
-                child: ColorFiltered(
-                  colorFilter:
-                      const ColorFilter.matrix(AppTheme.grayscaleMatrix),
-                  child: pose.isNetworkImage
-                      ? CachedNetworkImage(
-                          imageUrl: pose.networkOverlayUrl!,
-                          fit: BoxFit.contain,
-                          filterQuality: FilterQuality.medium,
-                          placeholder: (context, url) => const SizedBox(
-                            width: 48,
-                            height: 48,
-                            child: Center(
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: Colors.white38,
-                              ),
-                            ),
-                          ),
-                          errorWidget: (context, url, error) => const Icon(
-                            Icons.broken_image_outlined,
-                            color: Colors.white38,
-                            size: 48,
-                          ),
-                        )
-                      : Image.asset(
-                          pose.assetPath,
-                          fit: BoxFit.contain,
-                          filterQuality: FilterQuality.medium,
-                          gaplessPlayback: true,
-                        ),
-                ),
+                child: imageDisplay,
               ),
             ),
           ),
 
-          // Active Pose Tag at top (Disciplined B&W, 4dp radius)
+          // Active Pose Tag — anchored 8dp below top-bar (safe area + bar height)
+          // Single pill: pose name + optional attribution inline + dismiss X.
+          // Attribution does NOT appear a second time below this pill.
           if (overlayState.isControlsVisible)
             Positioned(
-              top: 56,
+              top: 100,
               left: 16,
               right: 16,
               child: Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 5),
-                      decoration: BoxDecoration(
-                        color: AppTheme.controlSurface,
-                        borderRadius:
-                            BorderRadius.circular(AppTheme.radiusSmall),
-                        border: Border.all(
-                          color: Colors.white.withValues(alpha: 0.2),
-                          width: 1,
-                        ),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            pose.name,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 12,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          GestureDetector(
-                            onTap: () {
-                              ref.read(overlayProvider.notifier).clearPose();
-                            },
-                            child: const Icon(
-                              Icons.close,
-                              size: 14,
-                              color: Colors.white70,
-                            ),
-                          ),
-                        ],
-                      ),
+                child: Container(
+                  constraints: const BoxConstraints(maxWidth: 280),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  decoration: BoxDecoration(
+                    color: AppTheme.controlSurface,
+                    borderRadius:
+                        BorderRadius.circular(AppTheme.radiusSmall),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.2),
+                      width: 1,
                     ),
-                    // Photographer attribution (Pexels images only)
-                    if (pose.isNetworkImage && pose.photographer != null)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 4),
-                        child: Text(
-                          'Photo: ${pose.photographer} / Pexels',
-                          style: TextStyle(
-                            color: Colors.white.withValues(alpha: 0.5),
-                            fontSize: 10,
-                            fontWeight: FontWeight.w400,
-                          ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Flexible(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              pose.isLocalImage
+                                  ? 'From Gallery'
+                                  : (pose.isNetworkImage
+                                      ? (pose.photographer ?? pose.name)
+                                      : pose.name),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            if (pose.isNetworkImage &&
+                                pose.photographer != null)
+                              Text(
+                                'Pexels',
+                                style: TextStyle(
+                                  color: Colors.white.withValues(alpha: 0.5),
+                                  fontSize: 10,
+                                ),
+                              ),
+                          ],
                         ),
                       ),
-                  ],
+                      const SizedBox(width: 8),
+                      GestureDetector(
+                        onTap: () {
+                          ref.read(overlayProvider.notifier).clearPose();
+                        },
+                        child: const Icon(
+                          Icons.close,
+                          size: 14,
+                          color: Colors.white70,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),

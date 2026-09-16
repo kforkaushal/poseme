@@ -19,6 +19,7 @@ class CameraNotifier extends StateNotifier<CameraState> with WidgetsBindingObser
   final Ref _ref;
   final PermissionService _permissionService;
   CameraController? _controller;
+  bool _isReiniting = false; // guard against concurrent re-init on rapid lifecycle changes
 
   CameraNotifier(this._ref, this._permissionService)
       : super(const CameraState()) {
@@ -30,25 +31,24 @@ class CameraNotifier extends StateNotifier<CameraState> with WidgetsBindingObser
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    final cameraController = _controller;
-
-    // App state changed before we got the chance to initialize
-    if (cameraController == null || !cameraController.value.isInitialized) {
-      return;
-    }
-
-    if (state == AppLifecycleState.inactive ||
-        state == AppLifecycleState.paused) {
-      // Free camera resource when app is backgrounded
+    // inactive fires before paused on Android — don't dispose yet or we get a
+    // double-dispose when paused follows immediately after.
+    // Only act on the definitive lifecycle transitions.
+    if (state == AppLifecycleState.paused) {
+      // Free camera resource when app is fully backgrounded
       disposeController();
-      this.state = this.state.copyWith(isInitialized: false);
+      this.state = this.state.copyWith(isInitialized: false, isInitializing: false);
+      _isReiniting = false;
     } else if (state == AppLifecycleState.resumed) {
-      // Re-initialize camera on foreground resume
-      initializeCamera();
+      // Re-initialize camera on foreground; guard against concurrent calls
+      if (!_isReiniting) {
+        initializeCamera();
+      }
     }
   }
 
   Future<void> initializeCamera() async {
+    _isReiniting = true;
     state = state.copyWith(isInitializing: true, clearError: true);
 
     // 1. Permission Check
@@ -64,6 +64,7 @@ class CameraNotifier extends StateNotifier<CameraState> with WidgetsBindingObser
           isPermanentlyDenied: permanentlyDenied,
           errorMessage: 'Camera permission is required to align poses and capture photos.',
         );
+        _isReiniting = false;
         return;
       }
     }
@@ -79,6 +80,7 @@ class CameraNotifier extends StateNotifier<CameraState> with WidgetsBindingObser
           availableCameras: [],
           errorMessage: 'No cameras found on this device.',
         );
+        _isReiniting = false;
         return;
       }
 
@@ -91,6 +93,7 @@ class CameraNotifier extends StateNotifier<CameraState> with WidgetsBindingObser
         isInitializing: false,
         errorMessage: 'Failed to access camera: $e',
       );
+      _isReiniting = false;
     }
   }
 
@@ -119,12 +122,14 @@ class CameraNotifier extends StateNotifier<CameraState> with WidgetsBindingObser
         isInitializing: false,
         clearError: true,
       );
+      _isReiniting = false;
     } catch (e) {
       state = state.copyWith(
         isInitialized: false,
         isInitializing: false,
         errorMessage: 'Could not initialize camera preview: $e',
       );
+      _isReiniting = false;
     }
   }
 
@@ -164,6 +169,13 @@ class CameraNotifier extends StateNotifier<CameraState> with WidgetsBindingObser
     } catch (_) {
       // Some cameras (like front cameras) don't support torch/flash
     }
+  }
+
+  /// Cycles the crop aspect ratio: Full → 9:16 → 4:5 → 1:1 → Full
+  void cycleAspectRatio() {
+    final values = CameraAspectRatio.values;
+    final nextIndex = (values.indexOf(state.aspectRatioMode) + 1) % values.length;
+    state = state.copyWith(aspectRatioMode: values[nextIndex]);
   }
 
   /// Takes a raw photo frame from camera

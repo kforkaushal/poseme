@@ -55,35 +55,55 @@ class SettingsScreen extends ConsumerWidget {
                   ],
                 ),
                 const SizedBox(height: 10),
+                // Custom monochrome theme selector — strictly no color outside gray tokens.
+                // SegmentedButton was replaced because Material3 tints the selected segment
+                // teal/cyan from the colorScheme, which violates the B&W design brief.
                 SizedBox(
                   width: double.infinity,
-                  child: SegmentedButton<ThemeMode>(
-                    segments: const [
-                      ButtonSegment<ThemeMode>(
-                        value: ThemeMode.light,
-                        label: Text('Light', style: TextStyle(fontSize: 13)),
-                      ),
-                      ButtonSegment<ThemeMode>(
-                        value: ThemeMode.dark,
-                        label: Text('Dark', style: TextStyle(fontSize: 13)),
-                      ),
-                      ButtonSegment<ThemeMode>(
-                        value: ThemeMode.system,
-                        label: Text('System', style: TextStyle(fontSize: 13)),
-                      ),
-                    ],
-                    selected: {settings.themeMode},
-                    onSelectionChanged: (newSelection) {
-                      settingsNotifier.setThemeMode(newSelection.first);
-                    },
-                    style: ButtonStyle(
-                      shape: WidgetStatePropertyAll(
-                        RoundedRectangleBorder(
-                          borderRadius:
-                              BorderRadius.circular(AppTheme.radiusSmall),
+                  height: 36,
+                  child: Row(
+                    children: ThemeMode.values.map((mode) {
+                      final isSelected = settings.themeMode == mode;
+                      final label = switch (mode) {
+                        ThemeMode.light => 'Light',
+                        ThemeMode.dark => 'Dark',
+                        ThemeMode.system => 'System',
+                      };
+                      final isFirst = mode == ThemeMode.values.first;
+                      final isLast = mode == ThemeMode.values.last;
+                      return Expanded(
+                        child: GestureDetector(
+                          onTap: () => settingsNotifier.setThemeMode(mode),
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 150),
+                            decoration: BoxDecoration(
+                              color: isSelected ? textColor : elevatedBg,
+                              borderRadius: BorderRadius.horizontal(
+                                left: isFirst
+                                    ? const Radius.circular(AppTheme.radiusSmall)
+                                    : Radius.zero,
+                                right: isLast
+                                    ? const Radius.circular(AppTheme.radiusSmall)
+                                    : Radius.zero,
+                              ),
+                              border: Border.all(color: borderColor),
+                            ),
+                            alignment: Alignment.center,
+                            child: Text(
+                              label,
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: isSelected
+                                    ? FontWeight.w600
+                                    : FontWeight.w400,
+                                color:
+                                    isSelected ? elevatedBg : secondaryTextColor,
+                              ),
+                            ),
+                          ),
                         ),
-                      ),
-                    ),
+                      );
+                    }).toList(),
                   ),
                 ),
               ],
@@ -113,6 +133,24 @@ class SettingsScreen extends ConsumerWidget {
                   ),
                   subtitle: Text(
                     'Show alignment guides on viewfinder',
+                    style: TextStyle(fontSize: 12, color: secondaryTextColor),
+                  ),
+                  activeTrackColor: textColor,
+                  contentPadding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+                ),
+                Divider(color: borderColor, height: 1),
+
+                // Crosshair Toggle
+                SwitchListTile.adaptive(
+                  value: settings.showCrosshair,
+                  onChanged: (_) => settingsNotifier.toggleCrosshair(),
+                  title: Text(
+                    'Center crosshair',
+                    style: TextStyle(fontSize: 15, color: textColor),
+                  ),
+                  subtitle: Text(
+                    'Show center mark to level and compose shots',
                     style: TextStyle(fontSize: 12, color: secondaryTextColor),
                   ),
                   activeTrackColor: textColor,

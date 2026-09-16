@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 import '../../../app/theme.dart';
@@ -17,10 +18,59 @@ class _PhotoComparisonSheetState extends State<PhotoComparisonSheet> {
   bool _isSideBySide = true;
   double _splitRatio = 0.5;
 
+  /// Builds the reference pose image, branching on source type.
+  /// Returns a graceful placeholder if the source is genuinely unavailable
+  /// (e.g. a photo captured before this metadata existed).
+  Widget _buildReferenceImage(CapturedPhoto photo) {
+    Widget child;
+    if (photo.poseNetworkUrl != null) {
+      child = CachedNetworkImage(
+        imageUrl: photo.poseNetworkUrl!,
+        fit: BoxFit.contain,
+        placeholder: (context, url) => const Center(
+          child: CircularProgressIndicator(
+            strokeWidth: 2,
+            color: Colors.white38,
+          ),
+        ),
+        errorWidget: (context, url, error) => const _ReferencePlaceholder(
+          message: 'Could not load reference image',
+        ),
+      );
+    } else if (photo.poseLocalFilePath != null) {
+      child = Image.file(
+        File(photo.poseLocalFilePath!),
+        fit: BoxFit.contain,
+        errorBuilder: (_, _, _) => const _ReferencePlaceholder(
+          message: 'Gallery photo no longer available',
+        ),
+      );
+    } else if (photo.poseAssetPath != null && photo.poseAssetPath!.isNotEmpty) {
+      child = Image.asset(
+        photo.poseAssetPath!,
+        fit: BoxFit.contain,
+        errorBuilder: (_, _, _) => const _ReferencePlaceholder(
+          message: 'Bundled pose not found',
+        ),
+      );
+    } else {
+      return const _ReferencePlaceholder(
+        message: 'Reference image unavailable',
+      );
+    }
+
+    // Apply grayscale filter (Pexels + bundled assets; skip for user gallery)
+    if (photo.poseLocalFilePath != null) return child;
+    return ColorFiltered(
+      colorFilter: const ColorFilter.matrix(AppTheme.grayscaleMatrix),
+      child: child,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final photo = widget.photo;
-    final hasPose = photo.poseAssetPath != null;
+    final hasPose = photo.hasReferenceImage;
 
     return Container(
       color: Colors.black,
@@ -134,14 +184,7 @@ class _PhotoComparisonSheetState extends State<PhotoComparisonSheet> {
                   ),
                   clipBehavior: Clip.antiAlias,
                   padding: const EdgeInsets.all(16),
-                  child: ColorFiltered(
-                    colorFilter:
-                        const ColorFilter.matrix(AppTheme.grayscaleMatrix),
-                    child: Image.asset(
-                      photo.poseAssetPath!,
-                      fit: BoxFit.contain,
-                    ),
-                  ),
+                  child: _buildReferenceImage(photo),
                 ),
               ),
             ],
@@ -203,19 +246,12 @@ class _PhotoComparisonSheetState extends State<PhotoComparisonSheet> {
                 fit: BoxFit.cover,
               ),
 
-              // Top Layer: Pose Reference Clipped (Grayscale)
+              // Top Layer: Pose Reference Clipped
               ClipRect(
                 clipper: _HorizontalSplitClipper(ratio: _splitRatio),
                 child: Container(
                   color: Colors.black.withValues(alpha: 0.75),
-                  child: ColorFiltered(
-                    colorFilter:
-                        const ColorFilter.matrix(AppTheme.grayscaleMatrix),
-                    child: Image.asset(
-                      photo.poseAssetPath!,
-                      fit: BoxFit.contain,
-                    ),
-                  ),
+                  child: _buildReferenceImage(photo),
                 ),
               ),
 
@@ -276,4 +312,30 @@ class _HorizontalSplitClipper extends CustomClipper<Rect> {
   @override
   bool shouldReclip(_HorizontalSplitClipper oldClipper) =>
       oldClipper.ratio != ratio;
+}
+
+/// Shown when the reference image source is unavailable (no URL, no local file,
+/// no bundled asset) — e.g. for photos captured before source metadata was tracked.
+class _ReferencePlaceholder extends StatelessWidget {
+  final String message;
+  const _ReferencePlaceholder({required this.message});
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(Icons.image_not_supported_outlined,
+              color: Colors.white30, size: 36),
+          const SizedBox(height: 8),
+          Text(
+            message,
+            textAlign: TextAlign.center,
+            style: const TextStyle(color: Colors.white38, fontSize: 11),
+          ),
+        ],
+      ),
+    );
+  }
 }

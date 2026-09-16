@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../app/theme.dart';
+import '../../../core/storage/image_crop_service.dart';
 import '../../../core/storage/photo_storage_service.dart';
 import '../../gallery/gallery_screen.dart';
 import '../../gallery/providers/gallery_provider.dart';
@@ -12,6 +13,7 @@ import '../../settings/providers/settings_provider.dart';
 import '../../settings/settings_screen.dart';
 import '../providers/camera_provider.dart';
 import '../providers/overlay_provider.dart';
+import 'camera_quick_menu.dart';
 
 class CameraControls extends ConsumerStatefulWidget {
   const CameraControls({super.key});
@@ -105,14 +107,22 @@ class _CameraControlsState extends ConsumerState<CameraControls>
     final xFile = await cameraNotifier.takePicture();
     if (xFile == null) return;
 
+    // Center-crop to selected aspect ratio before saving (no-op for full)
+    final croppedPath = await cropToAspectRatio(
+      xFile.path,
+      cameraState.aspectRatioMode,
+    );
+
     try {
       final storageService = ref.read(photoStorageServiceProvider);
       final savedPhoto = await storageService.saveCapturedPhoto(
-        tempPath: xFile.path,
+        tempPath: croppedPath,
         poseId: overlayState.selectedPose?.id,
         poseAssetPath: overlayState.selectedPose?.assetPath,
         poseName: overlayState.selectedPose?.name,
         isFrontCamera: cameraState.isFrontCamera,
+        poseNetworkUrl: overlayState.selectedPose?.networkOverlayUrl,
+        poseLocalFilePath: overlayState.selectedPose?.localFilePath,
       );
 
       ref.read(galleryPhotosProvider.notifier).addPhoto(savedPhoto);
@@ -187,55 +197,61 @@ class _CameraControlsState extends ConsumerState<CameraControls>
               ),
               child: SafeArea(
                 bottom: false,
-                child: Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      // Settings Icon
-                      _IconButton(
-                        icon: Icons.settings_outlined,
-                        tooltip: 'Settings',
-                        onPressed: () {
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (context) => const SettingsScreen(),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Padding(
+                      padding:
+                          const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          // Settings Icon
+                          _IconButton(
+                            icon: Icons.settings_outlined,
+                            tooltip: 'Settings',
+                            onPressed: () {
+                              Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (context) => const SettingsScreen(),
+                                ),
+                              );
+                            },
+                          ),
+
+                          // Title
+                          const Text(
+                            'Pose Me',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 17,
+                              fontWeight: FontWeight.w600,
+                              letterSpacing: 0.2,
                             ),
-                          );
-                        },
-                      ),
+                          ),
 
-                      // Title
-                      const Text(
-                        'Pose Me',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 17,
-                          fontWeight: FontWeight.w600,
-                          letterSpacing: 0.2,
-                        ),
+                          // Timer Switcher (Off, 3s, 10s)
+                          _IconButton(
+                            icon: settings.timerSeconds == 0
+                                ? Icons.timer_outlined
+                                : (settings.timerSeconds == 3
+                                    ? Icons.timer_3_outlined
+                                    : Icons.timer_10_outlined),
+                            tooltip: settings.timerSeconds == 0
+                                ? 'Timer: Off'
+                                : 'Timer: ${settings.timerSeconds}s',
+                            badgeText: settings.timerSeconds > 0
+                                ? '${settings.timerSeconds}s'
+                                : null,
+                            onPressed: () {
+                              ref.read(settingsProvider.notifier).cycleTimer();
+                            },
+                          ),
+                        ],
                       ),
-
-                      // Timer Switcher (Off, 3s, 10s)
-                      _IconButton(
-                        icon: settings.timerSeconds == 0
-                            ? Icons.timer_outlined
-                            : (settings.timerSeconds == 3
-                                ? Icons.timer_3_outlined
-                                : Icons.timer_10_outlined),
-                        tooltip: settings.timerSeconds == 0
-                            ? 'Timer: Off'
-                            : 'Timer: ${settings.timerSeconds}s',
-                        badgeText: settings.timerSeconds > 0
-                            ? '${settings.timerSeconds}s'
-                            : null,
-                        onPressed: () {
-                          ref.read(settingsProvider.notifier).cycleTimer();
-                        },
-                      ),
-                    ],
-                  ),
+                    ),
+                    const CameraQuickMenu(),
+                  ],
                 ),
               ),
             ),
@@ -281,18 +297,18 @@ class _CameraControlsState extends ConsumerState<CameraControls>
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(
-                              Icons.accessibility_new_rounded,
+                            // Viewfinder-corner icon — reads as "frame/pose reference"
+                            // (replaces accessibility_new which reads as an accessibility symbol)
+                            const Icon(
+                              Icons.crop_free_rounded,
                               size: 15,
-                              color: overlayState.selectedPose != null
-                                  ? Colors.white
-                                  : Colors.white70,
+                              color: Colors.white70,
                             ),
                             const SizedBox(width: 8),
                             Text(
                               overlayState.selectedPose != null
-                                  ? (overlayState.selectedPose!.isNetworkImage
-                                      ? overlayState.selectedPose!.photographer ?? 'Pose'
+                                  ? (overlayState.selectedPose!.isLocalImage
+                                      ? 'Gallery Photo'
                                       : overlayState.selectedPose!.name)
                                   : 'Pose Library',
                               style: const TextStyle(

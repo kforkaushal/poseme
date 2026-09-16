@@ -63,5 +63,19 @@ void main() {
       await notifier.toggleGridLines();
       expect(container.read(settingsProvider).showGridLines, !initialGrid);
     });
+
+    test('Toggling crosshair updates state', () async {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+
+      final notifier = container.read(settingsProvider.notifier);
+      expect(container.read(settingsProvider).showCrosshair, false);
+
+      await notifier.toggleCrosshair();
+      expect(container.read(settingsProvider).showCrosshair, true);
+
+      await notifier.toggleCrosshair();
+      expect(container.read(settingsProvider).showCrosshair, false);
+    });
   });
 }

@@ -36,6 +36,17 @@ class PoseReference {
   final String? networkOverlayUrl;
   final String? photographer;
 
+  /// Photo dimensions & aspect ratio
+  final int? width;
+  final int? height;
+
+  /// Local gallery image reference
+  final String? localFilePath;
+  final bool isLocalImage;
+
+  /// Whether to bypass B&W grayscale filter (e.g. for user gallery photos)
+  final bool skipGrayscale;
+
   const PoseReference({
     required this.id,
     required this.name,
@@ -47,7 +58,20 @@ class PoseReference {
     this.networkThumbnailUrl,
     this.networkOverlayUrl,
     this.photographer,
+    this.width,
+    this.height,
+    this.localFilePath,
+    this.isLocalImage = false,
+    this.skipGrayscale = false,
   });
+
+  /// Computed aspect ratio clamped to aesthetic limits (portrait-leaning)
+  double get aspectRatio {
+    if (width != null && height != null && height! > 0) {
+      return (width! / height!).clamp(0.55, 1.4);
+    }
+    return 2 / 3;
+  }
 
   /// Create a [PoseReference] from a Pexels API photo.
   factory PoseReference.fromPexels(PexelsPhoto photo, PoseCategory category) {
@@ -58,10 +82,30 @@ class PoseReference {
       networkThumbnailUrl: photo.thumbnailUrl,
       networkOverlayUrl: photo.overlayUrl,
       photographer: photo.photographer,
+      width: photo.width,
+      height: photo.height,
     );
   }
 
-  /// Whether this pose uses a network image (Pexels) vs a bundled asset.
+  /// Create a [PoseReference] from a picked gallery photo.
+  factory PoseReference.fromGallery({
+    required String filePath,
+    int? width,
+    int? height,
+  }) {
+    return PoseReference(
+      id: 'gallery_${DateTime.now().millisecondsSinceEpoch}',
+      name: 'From Gallery',
+      category: PoseCategory.all,
+      localFilePath: filePath,
+      isLocalImage: true,
+      skipGrayscale: true,
+      width: width,
+      height: height,
+    );
+  }
+
+  /// Whether this pose uses a network image (Pexels) vs a bundled asset or local file.
   bool get isNetworkImage => networkOverlayUrl != null;
 
   @override

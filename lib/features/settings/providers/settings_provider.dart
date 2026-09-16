@@ -16,6 +16,7 @@ class SettingsNotifier extends StateNotifier<AppSettings> {
   static const _keyOpacity = 'settings_default_opacity';
   static const _keyMirror = 'settings_mirror_front';
   static const _keySaveGallery = 'settings_save_gallery';
+  static const _keyCrosshair = 'settings_show_crosshair';
 
   SettingsNotifier() : super(const AppSettings()) {
     _loadSettings();
@@ -37,6 +38,7 @@ class SettingsNotifier extends StateNotifier<AppSettings> {
     final opacity = prefs.getDouble(_keyOpacity) ?? 0.40;
     final mirror = prefs.getBool(_keyMirror) ?? true;
     final saveGallery = prefs.getBool(_keySaveGallery) ?? true;
+    final crosshair = prefs.getBool(_keyCrosshair) ?? false;
 
     state = AppSettings(
       themeMode: themeMode,
@@ -45,6 +47,7 @@ class SettingsNotifier extends StateNotifier<AppSettings> {
       defaultOpacity: opacity,
       mirrorFrontCamera: mirror,
       saveToSystemGallery: saveGallery,
+      showCrosshair: crosshair,
     );
   }
 
@@ -100,5 +103,12 @@ class SettingsNotifier extends StateNotifier<AppSettings> {
     state = state.copyWith(saveToSystemGallery: next);
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_keySaveGallery, next);
+  }
+
+  Future<void> toggleCrosshair() async {
+    final next = !state.showCrosshair;
+    state = state.copyWith(showCrosshair: next);
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_keyCrosshair, next);
   }
 }

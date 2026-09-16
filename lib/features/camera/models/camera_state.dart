@@ -1,5 +1,22 @@
 import 'package:camera/camera.dart';
 
+/// The display / save crop ratio selected from the quick menu.
+enum CameraAspectRatio {
+  /// Full sensor — no crop applied to preview or saved file.
+  full('Full', null),
+  /// 9:16 portrait (standard Reels/Shorts format).
+  ratio9x16('9:16', 9 / 16),
+  /// 4:5 portrait (Instagram portrait).
+  ratio4x5('4:5', 4 / 5),
+  /// Square.
+  ratio1x1('1:1', 1.0);
+
+  final String label;
+  /// Target width/height ratio; null means no crop.
+  final double? ratio;
+  const CameraAspectRatio(this.label, this.ratio);
+}
+
 class CameraState {
   final bool isInitialized;
   final bool isInitializing;
@@ -10,6 +27,7 @@ class CameraState {
   final FlashMode flashMode;
   final bool isCapturing;
   final String? errorMessage;
+  final CameraAspectRatio aspectRatioMode;
 
   const CameraState({
     this.isInitialized = false,
@@ -21,6 +39,7 @@ class CameraState {
     this.flashMode = FlashMode.auto,
     this.isCapturing = false,
     this.errorMessage,
+    this.aspectRatioMode = CameraAspectRatio.full,
   });
 
   bool get hasCameras => availableCameras.isNotEmpty;
@@ -44,6 +63,7 @@ class CameraState {
     bool? isCapturing,
     String? errorMessage,
     bool clearError = false,
+    CameraAspectRatio? aspectRatioMode,
   }) {
     return CameraState(
       isInitialized: isInitialized ?? this.isInitialized,
@@ -55,6 +75,7 @@ class CameraState {
       flashMode: flashMode ?? this.flashMode,
       isCapturing: isCapturing ?? this.isCapturing,
       errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
+      aspectRatioMode: aspectRatioMode ?? this.aspectRatioMode,
     );
   }
 }

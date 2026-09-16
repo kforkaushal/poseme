@@ -7,6 +7,7 @@ class AppSettings {
   final double defaultOpacity;
   final bool mirrorFrontCamera;
   final bool saveToSystemGallery;
+  final bool showCrosshair;
 
   const AppSettings({
     this.themeMode = ThemeMode.dark,
@@ -15,6 +16,7 @@ class AppSettings {
     this.defaultOpacity = 0.40,
     this.mirrorFrontCamera = true,
     this.saveToSystemGallery = true,
+    this.showCrosshair = false,
   });
 
   AppSettings copyWith({
@@ -24,6 +26,7 @@ class AppSettings {
     double? defaultOpacity,
     bool? mirrorFrontCamera,
     bool? saveToSystemGallery,
+    bool? showCrosshair,
   }) {
     return AppSettings(
       themeMode: themeMode ?? this.themeMode,
@@ -32,6 +35,7 @@ class AppSettings {
       defaultOpacity: defaultOpacity ?? this.defaultOpacity,
       mirrorFrontCamera: mirrorFrontCamera ?? this.mirrorFrontCamera,
       saveToSystemGallery: saveToSystemGallery ?? this.saveToSystemGallery,
+      showCrosshair: showCrosshair ?? this.showCrosshair,
     );
   }
 }

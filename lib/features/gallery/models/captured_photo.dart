@@ -5,9 +5,19 @@ class CapturedPhoto {
   final String filePath;
   final DateTime createdAt;
   final String? poseId;
+  /// Bundled asset path — only populated for poses bundled with the app.
+  /// Empty string for Pexels/network poses and gallery picks.
   final String? poseAssetPath;
   final String? poseName;
   final bool isFrontCamera;
+
+  /// Network URL (Pexels overlay image) — populated when the active pose was a
+  /// Pexels result. Used by the comparison view to render the reference panel.
+  final String? poseNetworkUrl;
+
+  /// Local file path — populated when the active pose was picked from the
+  /// device gallery. Used by the comparison view to render the reference panel.
+  final String? poseLocalFilePath;
 
   const CapturedPhoto({
     required this.id,
@@ -17,7 +27,15 @@ class CapturedPhoto {
     this.poseAssetPath,
     this.poseName,
     this.isFrontCamera = false,
+    this.poseNetworkUrl,
+    this.poseLocalFilePath,
   });
+
+  /// True if this photo has a reference pose that can be shown in the comparison view.
+  bool get hasReferenceImage =>
+      (poseAssetPath != null && poseAssetPath!.isNotEmpty) ||
+      poseNetworkUrl != null ||
+      poseLocalFilePath != null;
 
   Map<String, dynamic> toMap() {
     return {
@@ -28,6 +46,8 @@ class CapturedPhoto {
       'poseAssetPath': poseAssetPath,
       'poseName': poseName,
       'isFrontCamera': isFrontCamera,
+      'poseNetworkUrl': poseNetworkUrl,
+      'poseLocalFilePath': poseLocalFilePath,
     };
   }
 
@@ -40,6 +60,8 @@ class CapturedPhoto {
       poseAssetPath: map['poseAssetPath'] as String?,
       poseName: map['poseName'] as String?,
       isFrontCamera: (map['isFrontCamera'] as bool?) ?? false,
+      poseNetworkUrl: map['poseNetworkUrl'] as String?,
+      poseLocalFilePath: map['poseLocalFilePath'] as String?,
     );
   }
 

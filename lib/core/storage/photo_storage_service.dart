@@ -22,6 +22,8 @@ class PhotoStorageService {
     String? poseAssetPath,
     String? poseName,
     bool isFrontCamera = false,
+    String? poseNetworkUrl,
+    String? poseLocalFilePath,
   }) async {
     final docsDir = await getApplicationDocumentsDirectory();
     final photosDir = Directory(p.join(docsDir.path, 'captured_poses'));
@@ -53,6 +55,8 @@ class PhotoStorageService {
       poseAssetPath: poseAssetPath,
       poseName: poseName,
       isFrontCamera: isFrontCamera,
+      poseNetworkUrl: poseNetworkUrl,
+      poseLocalFilePath: poseLocalFilePath,
     );
 
     await _persistPhotoMetadata(photo);

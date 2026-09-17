@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../app/theme.dart';
 import '../providers/overlay_provider.dart';
+import 'sketch_overlay.dart';
 
 class OverlayLayer extends ConsumerStatefulWidget {
   const OverlayLayer({super.key});
@@ -86,13 +87,15 @@ class _OverlayLayerState extends ConsumerState<OverlayLayer> {
       );
     }
 
-    // Apply grayscale filter only if not skipped (user gallery images stay full color)
-    final imageDisplay = pose.skipGrayscale
-        ? rawImage
-        : ColorFiltered(
-            colorFilter: const ColorFilter.matrix(AppTheme.grayscaleMatrix),
-            child: rawImage,
-          );
+    // Select visual display based on mode: artistic sketch or grayscale photo
+    final imageDisplay = overlayState.overlayMode == OverlayMode.sketch
+        ? SketchOverlay(pose: pose)
+        : (pose.skipGrayscale
+            ? rawImage
+            : ColorFiltered(
+                colorFilter: const ColorFilter.matrix(AppTheme.grayscaleMatrix),
+                child: rawImage,
+              ));
 
     return GestureDetector(
       behavior: HitTestBehavior.translucent,
@@ -117,7 +120,7 @@ class _OverlayLayerState extends ConsumerState<OverlayLayer> {
       child: Stack(
         fit: StackFit.expand,
         children: [
-          // Ghosted Pose Image with Interactive Transform
+          // Ghosted Pose Image or Sketch with Interactive Transform
           Center(
             child: Transform(
               alignment: Alignment.center,

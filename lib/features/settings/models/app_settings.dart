@@ -8,6 +8,7 @@ class AppSettings {
   final bool mirrorFrontCamera;
   final bool saveToSystemGallery;
   final bool showCrosshair;
+  final bool addWatermark;
 
   const AppSettings({
     this.themeMode = ThemeMode.dark,
@@ -17,6 +18,7 @@ class AppSettings {
     this.mirrorFrontCamera = true,
     this.saveToSystemGallery = true,
     this.showCrosshair = false,
+    this.addWatermark = true,
   });
 
   AppSettings copyWith({
@@ -27,6 +29,7 @@ class AppSettings {
     bool? mirrorFrontCamera,
     bool? saveToSystemGallery,
     bool? showCrosshair,
+    bool? addWatermark,
   }) {
     return AppSettings(
       themeMode: themeMode ?? this.themeMode,
@@ -36,6 +39,7 @@ class AppSettings {
       mirrorFrontCamera: mirrorFrontCamera ?? this.mirrorFrontCamera,
       saveToSystemGallery: saveToSystemGallery ?? this.saveToSystemGallery,
       showCrosshair: showCrosshair ?? this.showCrosshair,
+      addWatermark: addWatermark ?? this.addWatermark,
     );
   }
 }

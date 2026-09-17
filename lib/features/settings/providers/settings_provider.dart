@@ -17,6 +17,7 @@ class SettingsNotifier extends StateNotifier<AppSettings> {
   static const _keyMirror = 'settings_mirror_front';
   static const _keySaveGallery = 'settings_save_gallery';
   static const _keyCrosshair = 'settings_show_crosshair';
+  static const _keyWatermark = 'settings_add_watermark';
 
   SettingsNotifier() : super(const AppSettings()) {
     _loadSettings();
@@ -39,6 +40,7 @@ class SettingsNotifier extends StateNotifier<AppSettings> {
     final mirror = prefs.getBool(_keyMirror) ?? true;
     final saveGallery = prefs.getBool(_keySaveGallery) ?? true;
     final crosshair = prefs.getBool(_keyCrosshair) ?? false;
+    final watermark = prefs.getBool(_keyWatermark) ?? true;
 
     state = AppSettings(
       themeMode: themeMode,
@@ -48,6 +50,7 @@ class SettingsNotifier extends StateNotifier<AppSettings> {
       mirrorFrontCamera: mirror,
       saveToSystemGallery: saveGallery,
       showCrosshair: crosshair,
+      addWatermark: watermark,
     );
   }
 
@@ -110,5 +113,12 @@ class SettingsNotifier extends StateNotifier<AppSettings> {
     state = state.copyWith(showCrosshair: next);
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_keyCrosshair, next);
+  }
+
+  Future<void> toggleWatermark() async {
+    final next = !state.addWatermark;
+    state = state.copyWith(addWatermark: next);
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_keyWatermark, next);
   }
 }

@@ -149,6 +149,7 @@ class _PhotoComparisonSheetState extends State<PhotoComparisonSheet> {
         child: Image.file(
           File(photo.filePath),
           fit: BoxFit.contain,
+          filterQuality: FilterQuality.high,
         ),
       ),
     );
@@ -220,6 +221,7 @@ class _PhotoComparisonSheetState extends State<PhotoComparisonSheet> {
                   child: Image.file(
                     File(photo.filePath),
                     fit: BoxFit.cover,
+                    filterQuality: FilterQuality.high,
                   ),
                 ),
               ),

@@ -7,6 +7,7 @@ import 'package:shimmer/shimmer.dart';
 
 import '../../app/main_navigation_screen.dart';
 import '../../app/theme.dart';
+import '../../core/image/pose_sketch_cache.dart';
 import '../../core/utils/string_utils.dart';
 import '../camera/providers/overlay_provider.dart';
 import '../pose_library/models/pose_reference.dart';
@@ -295,6 +296,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     ),
                   ),
                   data: (poses) {
+                    // Fire-and-forget: warm the sketch cache in the background
+                    // so Sketch mode is instant when the user taps it.
+                    Future.microtask(
+                      () => PoseSketchCache.instance.prefetchAll(poses),
+                    );
                     if (poses.isEmpty) {
                       return Center(
                         child: Padding(

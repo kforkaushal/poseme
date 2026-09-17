@@ -104,5 +104,36 @@ void main() {
       notifier.selectPose(customPose);
       expect(container.read(overlayProvider).selectedPose?.id, 'test_pose');
     });
+
+    test('OverlayMode cycles between photo and sketch', () {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+
+      final notifier = container.read(overlayProvider.notifier);
+      expect(container.read(overlayProvider).overlayMode, OverlayMode.photo);
+
+      // Photo -> Sketch
+      notifier.cycleOverlayMode();
+      expect(container.read(overlayProvider).overlayMode, OverlayMode.sketch);
+      expect(container.read(overlayProvider).isProcessingSketch, true);
+
+      // Sketch -> Photo
+      notifier.cycleOverlayMode();
+      expect(container.read(overlayProvider).overlayMode, OverlayMode.photo);
+      expect(container.read(overlayProvider).isProcessingSketch, false);
+    });
+
+    test('Sketch failure auto-reverts to photo mode', () {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+
+      final notifier = container.read(overlayProvider.notifier);
+      notifier.cycleOverlayMode(); // switch to sketch
+      expect(container.read(overlayProvider).overlayMode, OverlayMode.sketch);
+
+      notifier.setSketchFailed(true);
+      expect(container.read(overlayProvider).overlayMode, OverlayMode.photo);
+      expect(container.read(overlayProvider).sketchFailed, true);
+    });
   });
 }

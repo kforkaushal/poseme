@@ -12,73 +12,125 @@ import 'theme.dart';
 /// 2: Gallery (Captured Photos)
 final navigationIndexProvider = StateProvider<int>((ref) => 0);
 
-class MainNavigationScreen extends ConsumerWidget {
+class MainNavigationScreen extends ConsumerStatefulWidget {
   const MainNavigationScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final selectedIndex = ref.watch(navigationIndexProvider);
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+  ConsumerState<MainNavigationScreen> createState() =>
+      _MainNavigationScreenState();
+}
 
+class _MainNavigationScreenState extends ConsumerState<MainNavigationScreen> {
+  final List<int> _history = [0];
+
+  @override
+  void initState() {
+    super.initState();
+    final initialIndex = ref.read(navigationIndexProvider);
+    if (initialIndex != 0) {
+      _history.add(initialIndex);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final selectedIndex = ref.watch(navigationIndexProvider);
+
+    // Keep history stack synced with navigationIndexProvider changes
+    ref.listen<int>(navigationIndexProvider, (previous, next) {
+      if (_history.isEmpty || _history.last != next) {
+        _history.remove(next);
+        _history.add(next);
+      }
+    });
+
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final navBg = isDark ? const Color(0xFF0D0E11) : const Color(0xFFF7F7F8);
-    final borderColor = isDark ? AppTheme.darkBorderHairline : AppTheme.lightBorderHairline;
+    final borderColor =
+        isDark ? AppTheme.darkBorderHairline : AppTheme.lightBorderHairline;
     final selectedColor = isDark ? Colors.white : Colors.black;
     final unselectedColor = isDark ? Colors.white38 : Colors.black38;
 
-    return Scaffold(
-      backgroundColor: Colors.black,
-      body: IndexedStack(
-        index: selectedIndex,
-        children: const [
-          HomeScreen(),
-          CameraScreen(),
-          GalleryScreen(),
-        ],
-      ),
-      bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          color: navBg,
-          border: Border(
-            top: BorderSide(
-              color: borderColor,
-              width: 0.5,
+    final canPop = _history.length <= 1 && selectedIndex == 0;
+
+    return PopScope(
+      canPop: canPop,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+
+        if (_history.length > 1) {
+          setState(() {
+            _history.removeLast();
+            final target = _history.last;
+            ref.read(navigationIndexProvider.notifier).state = target;
+          });
+        } else if (selectedIndex != 0) {
+          setState(() {
+            _history
+              ..clear()
+              ..add(0);
+            ref.read(navigationIndexProvider.notifier).state = 0;
+          });
+        }
+      },
+      child: Scaffold(
+        backgroundColor: Colors.black,
+        body: IndexedStack(
+          index: selectedIndex,
+          children: const [
+            HomeScreen(),
+            CameraScreen(),
+            GalleryScreen(),
+          ],
+        ),
+        bottomNavigationBar: Container(
+          decoration: BoxDecoration(
+            color: navBg,
+            border: Border(
+              top: BorderSide(
+                color: borderColor,
+                width: 0.5,
+              ),
             ),
           ),
-        ),
-        child: SafeArea(
-          top: false,
-          child: SizedBox(
-            height: 52,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                _NavItem(
-                  icon: Icons.grid_view_rounded,
-                  label: 'Home',
-                  isSelected: selectedIndex == 0,
-                  selectedColor: selectedColor,
-                  unselectedColor: unselectedColor,
-                  onTap: () => ref.read(navigationIndexProvider.notifier).state = 0,
-                ),
-                _NavItem(
-                  icon: Icons.camera_alt_outlined,
-                  activeIcon: Icons.camera_alt_rounded,
-                  label: 'Camera',
-                  isSelected: selectedIndex == 1,
-                  selectedColor: selectedColor,
-                  unselectedColor: unselectedColor,
-                  onTap: () => ref.read(navigationIndexProvider.notifier).state = 1,
-                ),
-                _NavItem(
-                  icon: Icons.photo_library_outlined,
-                  activeIcon: Icons.photo_library_rounded,
-                  label: 'Gallery',
-                  isSelected: selectedIndex == 2,
-                  selectedColor: selectedColor,
-                  unselectedColor: unselectedColor,
-                  onTap: () => ref.read(navigationIndexProvider.notifier).state = 2,
-                ),
-              ],
+          child: SafeArea(
+            top: false,
+            child: SizedBox(
+              height: 52,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  _NavItem(
+                    icon: Icons.grid_view_rounded,
+                    label: 'Home',
+                    isSelected: selectedIndex == 0,
+                    selectedColor: selectedColor,
+                    unselectedColor: unselectedColor,
+                    onTap: () =>
+                        ref.read(navigationIndexProvider.notifier).state = 0,
+                  ),
+                  _NavItem(
+                    icon: Icons.camera_alt_outlined,
+                    activeIcon: Icons.camera_alt_rounded,
+                    label: 'Camera',
+                    isSelected: selectedIndex == 1,
+                    selectedColor: selectedColor,
+                    unselectedColor: unselectedColor,
+                    onTap: () =>
+                        ref.read(navigationIndexProvider.notifier).state = 1,
+                  ),
+                  _NavItem(
+                    icon: Icons.photo_library_outlined,
+                    activeIcon: Icons.photo_library_rounded,
+                    label: 'Gallery',
+                    isSelected: selectedIndex == 2,
+                    selectedColor: selectedColor,
+                    unselectedColor: unselectedColor,
+                    onTap: () =>
+                        ref.read(navigationIndexProvider.notifier).state = 2,
+                  ),
+                ],
+              ),
             ),
           ),
         ),

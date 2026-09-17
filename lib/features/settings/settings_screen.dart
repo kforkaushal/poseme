@@ -199,6 +199,26 @@ class SettingsScreen extends ConsumerWidget {
                 ),
                 Divider(color: borderColor, height: 1),
 
+                // Brand Watermark Toggle
+                SwitchListTile(
+                  value: settings.addWatermark,
+                  onChanged: (_) => settingsNotifier.toggleWatermark(),
+                  title: Text(
+                    'Brand watermark',
+                    style: TextStyle(fontSize: 15, color: textColor),
+                  ),
+                  subtitle: Text(
+                    settings.addWatermark
+                        ? 'Subtle Pose Me logo on saved photos'
+                        : 'No watermark on saved photos',
+                    style: TextStyle(fontSize: 12, color: secondaryTextColor),
+                  ),
+                  activeTrackColor: textColor,
+                  contentPadding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+                ),
+                Divider(color: borderColor, height: 1),
+
                 // Default Opacity Slider
                 Padding(
                   padding:
@@ -253,6 +273,8 @@ class SettingsScreen extends ConsumerWidget {
           _SectionHeader(title: 'about', color: secondaryTextColor),
           const SizedBox(height: 8),
           Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(vertical: 20),
             decoration: BoxDecoration(
               color: elevatedBg,
               borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
@@ -260,27 +282,51 @@ class SettingsScreen extends ConsumerWidget {
             ),
             child: Column(
               children: [
-                ListTile(
-                  title: Text('Version',
-                      style: TextStyle(fontSize: 15, color: textColor)),
-                  trailing: Text(
-                    '1.0.0 (build 1)',
-                    style: TextStyle(fontSize: 13, color: secondaryTextColor),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(16),
+                  child: Image.asset(
+                    'assets/icon/logo_full.png',
+                    width: 64,
+                    height: 64,
+                    fit: BoxFit.cover,
                   ),
                 ),
+                const SizedBox(height: 12),
+                Text(
+                  'Pose Me',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                    color: textColor,
+                    letterSpacing: 0.3,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Version 1.0.0 (build 1)',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: secondaryTextColor,
+                  ),
+                ),
+                const SizedBox(height: 16),
                 Divider(color: borderColor, height: 1),
-                ListTile(
-                  title: Text('Licenses',
-                      style: TextStyle(fontSize: 15, color: textColor)),
-                  trailing: Icon(Icons.chevron_right,
-                      size: 18, color: secondaryTextColor),
-                  onTap: () {
-                    showLicensePage(
-                      context: context,
-                      applicationName: 'Pose Me!',
-                      applicationVersion: '1.0.0',
-                    );
-                  },
+                Material(
+                  color: Colors.transparent,
+                  child: ListTile(
+                    dense: true,
+                    title: Text('Licenses',
+                        style: TextStyle(fontSize: 14, color: textColor)),
+                    trailing: Icon(Icons.chevron_right,
+                        size: 18, color: secondaryTextColor),
+                    onTap: () {
+                      showLicensePage(
+                        context: context,
+                        applicationName: 'Pose Me',
+                        applicationVersion: '1.0.0',
+                      );
+                    },
+                  ),
                 ),
               ],
             ),

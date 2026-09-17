@@ -115,6 +115,7 @@ class GalleryScreen extends ConsumerWidget {
                       Image.file(
                         File(photo.filePath),
                         fit: BoxFit.cover,
+                        filterQuality: FilterQuality.medium,
                       ),
                       if (photo.poseName != null)
                         Positioned(
@@ -252,6 +253,7 @@ class _PhotoDetailView extends ConsumerWidget {
           child: Image.file(
             File(photo.filePath),
             fit: BoxFit.contain,
+            filterQuality: FilterQuality.high,
           ),
         ),
       ),

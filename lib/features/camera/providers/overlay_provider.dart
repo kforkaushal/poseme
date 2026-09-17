@@ -3,6 +3,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../pose_library/models/pose_reference.dart';
 
+/// Which visual style to render as the camera overlay.
+enum OverlayMode {
+  /// Translucent grayscale photo of the pose.
+  photo,
+
+  /// Artistic white-on-transparent line sketch capturing posture and contours.
+  sketch,
+}
+
 class OverlayState {
   final PoseReference? selectedPose;
   final double opacity;
@@ -14,6 +23,15 @@ class OverlayState {
   final bool burnInOverlay;
   final bool isControlsVisible;
 
+  /// Which visual mode is active (photo or sketch).
+  final OverlayMode overlayMode;
+
+  /// True while background processing is generating the sketch.
+  final bool isProcessingSketch;
+
+  /// True if sketch generation failed; UI should fall back to photo.
+  final bool sketchFailed;
+
   const OverlayState({
     this.selectedPose,
     this.opacity = 0.40,
@@ -24,6 +42,9 @@ class OverlayState {
     this.isUserMirrorOverridden = false,
     this.burnInOverlay = false,
     this.isControlsVisible = true,
+    this.overlayMode = OverlayMode.photo,
+    this.isProcessingSketch = false,
+    this.sketchFailed = false,
   });
 
   OverlayState copyWith({
@@ -37,6 +58,9 @@ class OverlayState {
     bool? isUserMirrorOverridden,
     bool? burnInOverlay,
     bool? isControlsVisible,
+    OverlayMode? overlayMode,
+    bool? isProcessingSketch,
+    bool? sketchFailed,
   }) {
     return OverlayState(
       selectedPose: clearPose ? null : (selectedPose ?? this.selectedPose),
@@ -49,6 +73,9 @@ class OverlayState {
           isUserMirrorOverridden ?? this.isUserMirrorOverridden,
       burnInOverlay: burnInOverlay ?? this.burnInOverlay,
       isControlsVisible: isControlsVisible ?? this.isControlsVisible,
+      overlayMode: overlayMode ?? this.overlayMode,
+      isProcessingSketch: isProcessingSketch ?? this.isProcessingSketch,
+      sketchFailed: sketchFailed ?? this.sketchFailed,
     );
   }
 }
@@ -63,7 +90,44 @@ class OverlayNotifier extends StateNotifier<OverlayState> {
       : super(OverlayState(selectedPose: initialPose));
 
   void selectPose(PoseReference? pose) {
-    state = state.copyWith(selectedPose: pose, clearPose: pose == null);
+    // Reset sketch state whenever the pose changes so the new pose
+    // triggers fresh sketch loading if needed.
+    state = state.copyWith(
+      selectedPose: pose,
+      clearPose: pose == null,
+      overlayMode: OverlayMode.photo,
+      isProcessingSketch: false,
+      sketchFailed: false,
+    );
+  }
+
+  /// Cycle between Photo and Sketch modes.
+  void cycleOverlayMode() {
+    final next = state.overlayMode == OverlayMode.photo
+        ? OverlayMode.sketch
+        : OverlayMode.photo;
+    state = state.copyWith(
+      overlayMode: next,
+      isProcessingSketch: next == OverlayMode.sketch,
+      sketchFailed: false,
+    );
+  }
+
+  void setSketchProcessing(bool value) {
+    state = state.copyWith(isProcessingSketch: value);
+  }
+
+  void setSketchFailed(bool value) {
+    if (value) {
+      // Auto-revert to photo mode on failure.
+      state = state.copyWith(
+        overlayMode: OverlayMode.photo,
+        isProcessingSketch: false,
+        sketchFailed: true,
+      );
+    } else {
+      state = state.copyWith(sketchFailed: false);
+    }
   }
 
   void setOpacity(double opacity) {

@@ -103,7 +103,7 @@ class CameraNotifier extends StateNotifier<CameraState> with WidgetsBindingObser
 
     final newController = CameraController(
       cameraDescription,
-      ResolutionPreset.high,
+      ResolutionPreset.veryHigh,
       enableAudio: false,
       imageFormatGroup: ImageFormatGroup.jpeg,
     );

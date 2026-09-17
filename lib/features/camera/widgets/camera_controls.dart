@@ -90,6 +90,7 @@ class _CameraControlsState extends ConsumerState<CameraControls>
     final cameraNotifier = ref.read(cameraProvider.notifier);
     final overlayState = ref.read(overlayProvider);
     final cameraState = ref.read(cameraProvider);
+    final settings = ref.read(settingsProvider);
     final mediaQuery = MediaQuery.of(context);
     final reduceMotion = mediaQuery.disableAnimations;
 
@@ -109,16 +110,17 @@ class _CameraControlsState extends ConsumerState<CameraControls>
     final xFile = await cameraNotifier.takePicture();
     if (xFile == null) return;
 
-    // Center-crop to selected aspect ratio before saving (no-op for full)
-    final croppedPath = await cropToAspectRatio(
-      xFile.path,
-      cameraState.aspectRatioMode,
+    // Process photo in background isolate: orientation, aspect ratio crop, and watermark
+    final processedPath = await processCapturedPhoto(
+      sourcePath: xFile.path,
+      ratio: cameraState.aspectRatioMode,
+      addWatermark: settings.addWatermark,
     );
 
     try {
       final storageService = ref.read(photoStorageServiceProvider);
       final savedPhoto = await storageService.saveCapturedPhoto(
-        tempPath: croppedPath,
+        tempPath: processedPath,
         poseId: overlayState.selectedPose?.id,
         poseAssetPath: overlayState.selectedPose?.assetPath,
         poseName: overlayState.selectedPose?.name,

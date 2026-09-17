@@ -6,6 +6,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:shimmer/shimmer.dart';
 
 import '../../../app/theme.dart';
+import '../../../core/utils/string_utils.dart';
 import '../../camera/providers/overlay_provider.dart';
 import '../models/pose_reference.dart';
 import '../providers/pose_library_provider.dart';
@@ -432,9 +433,11 @@ class _PoseTile extends ConsumerWidget {
                   color: (isDark ? Colors.black : Colors.white)
                       .withValues(alpha: 0.75),
                   child: Text(
-                    pose.isNetworkImage
-                        ? (pose.photographer ?? '')
-                        : pose.name,
+                    toTitleCase(
+                      pose.isNetworkImage
+                          ? (pose.photographer ?? '')
+                          : pose.name,
+                    ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     textAlign: TextAlign.center,

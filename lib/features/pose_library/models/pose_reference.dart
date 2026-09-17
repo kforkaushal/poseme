@@ -108,6 +108,49 @@ class PoseReference {
   /// Whether this pose uses a network image (Pexels) vs a bundled asset or local file.
   bool get isNetworkImage => networkOverlayUrl != null;
 
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'name': name,
+      'category': category.name,
+      'assetPath': assetPath,
+      'description': description,
+      'tips': tips,
+      'difficulty': difficulty,
+      'networkThumbnailUrl': networkThumbnailUrl,
+      'networkOverlayUrl': networkOverlayUrl,
+      'photographer': photographer,
+      'width': width,
+      'height': height,
+      'localFilePath': localFilePath,
+      'isLocalImage': isLocalImage,
+      'skipGrayscale': skipGrayscale,
+    };
+  }
+
+  factory PoseReference.fromMap(Map<String, dynamic> map) {
+    return PoseReference(
+      id: map['id'] as String,
+      name: map['name'] as String? ?? '',
+      category: PoseCategory.values.firstWhere(
+        (c) => c.name == map['category'],
+        orElse: () => PoseCategory.all,
+      ),
+      assetPath: map['assetPath'] as String? ?? '',
+      description: map['description'] as String? ?? '',
+      tips: (map['tips'] as List<dynamic>?)?.cast<String>() ?? const [],
+      difficulty: map['difficulty'] as String? ?? 'Easy',
+      networkThumbnailUrl: map['networkThumbnailUrl'] as String?,
+      networkOverlayUrl: map['networkOverlayUrl'] as String?,
+      photographer: map['photographer'] as String?,
+      width: map['width'] as int?,
+      height: map['height'] as int?,
+      localFilePath: map['localFilePath'] as String?,
+      isLocalImage: map['isLocalImage'] as bool? ?? false,
+      skipGrayscale: map['skipGrayscale'] as bool? ?? false,
+    );
+  }
+
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||

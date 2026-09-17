@@ -6,13 +6,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../app/theme.dart';
 import '../../../core/storage/image_crop_service.dart';
 import '../../../core/storage/photo_storage_service.dart';
+import '../../../core/utils/string_utils.dart';
 import '../../gallery/gallery_screen.dart';
 import '../../gallery/providers/gallery_provider.dart';
-import '../../pose_library/widgets/pose_library_sheet.dart';
+import '../../pose_library/providers/shot_list_provider.dart';
 import '../../settings/providers/settings_provider.dart';
 import '../../settings/settings_screen.dart';
 import '../providers/camera_provider.dart';
 import '../providers/overlay_provider.dart';
+import 'camera_pose_queue_strip.dart';
 import 'camera_quick_menu.dart';
 
 class CameraControls extends ConsumerStatefulWidget {
@@ -135,6 +137,7 @@ class _CameraControlsState extends ConsumerState<CameraControls>
   Widget build(BuildContext context) {
     final cameraState = ref.watch(cameraProvider);
     final overlayState = ref.watch(overlayProvider);
+    final queueState = ref.watch(cameraQueueProvider);
     final latestPhoto = ref.watch(latestCapturedPhotoProvider);
     final settings = ref.watch(settingsProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -251,6 +254,67 @@ class _CameraControlsState extends ConsumerState<CameraControls>
                       ),
                     ),
                     const CameraQuickMenu(),
+
+                    // ATTRIBUTION RENDERER — NOTE: This is the ONLY attribution renderer
+                    // in the entire camera screen and codebase. Do not add another one elsewhere!
+                    if (overlayState.selectedPose != null)
+                      Container(
+                        margin: const EdgeInsets.only(top: 6, bottom: 4),
+                        padding:
+                            const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: AppTheme.controlSurface,
+                          borderRadius:
+                              BorderRadius.circular(AppTheme.radiusSmall),
+                          border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.15),
+                            width: 0.5,
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(
+                              Icons.person_outline_rounded,
+                              size: 13,
+                              color: Colors.white70,
+                            ),
+                            const SizedBox(width: 5),
+                            ConstrainedBox(
+                              constraints: const BoxConstraints(maxWidth: 220),
+                              child: Text(
+                                overlayState.selectedPose!.isLocalImage
+                                    ? 'From Gallery'
+                                    : (overlayState.selectedPose!.isNetworkImage
+                                        ? '${toTitleCase(overlayState.selectedPose!.photographer ?? overlayState.selectedPose!.name)} · Pexels'
+                                        : toTitleCase(overlayState.selectedPose!.name)),
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w500,
+                                  letterSpacing: 0.2,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            GestureDetector(
+                              onTap: () {
+                                ref.read(overlayProvider.notifier).clearPose();
+                                ref.read(cameraQueueProvider.notifier).clearQueue();
+                              },
+                              child: const Padding(
+                                padding: EdgeInsets.all(2.0),
+                                child: Icon(
+                                  Icons.close_rounded,
+                                  size: 13,
+                                  color: Colors.white60,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                   ],
                 ),
               ),
@@ -273,63 +337,11 @@ class _CameraControlsState extends ConsumerState<CameraControls>
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    // Single tap target: Pose Library (above shutter)
-                    GestureDetector(
-                      onTap: () {
-                        PoseLibrarySheet.show(context);
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 7,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppTheme.controlSurface,
-                          borderRadius:
-                              BorderRadius.circular(AppTheme.radiusSmall),
-                          border: Border.all(
-                            color: overlayState.selectedPose != null
-                                ? Colors.white
-                                : Colors.white.withValues(alpha: 0.2),
-                            width: 1,
-                          ),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            // Viewfinder-corner icon — reads as "frame/pose reference"
-                            // (replaces accessibility_new which reads as an accessibility symbol)
-                            const Icon(
-                              Icons.crop_free_rounded,
-                              size: 15,
-                              color: Colors.white70,
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              overlayState.selectedPose != null
-                                  ? (overlayState.selectedPose!.isLocalImage
-                                      ? 'Gallery Photo'
-                                      : overlayState.selectedPose!.name)
-                                  : 'Pose Library',
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 13,
-                                fontWeight: FontWeight.w500,
-                              ),
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            const SizedBox(width: 4),
-                            const Icon(
-                              Icons.expand_less,
-                              size: 16,
-                              color: Colors.white70,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(height: 18),
+                    // If queue session is active, show the horizontal queue strip
+                    if (queueState.isActive) ...[
+                      const CameraPoseQueueStrip(),
+                      const SizedBox(height: 18),
+                    ],
 
                     // Controls Row: Gallery · Shutter · Flip
                     Padding(

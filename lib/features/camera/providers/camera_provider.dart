@@ -1,4 +1,5 @@
 import 'package:camera/camera.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -112,6 +113,11 @@ class CameraNotifier extends StateNotifier<CameraState> with WidgetsBindingObser
     try {
       await newController.initialize();
       await newController.setFlashMode(state.flashMode);
+      try {
+        await newController.lockCaptureOrientation(DeviceOrientation.portraitUp);
+      } catch (_) {
+        // Some platforms/devices do not support orientation lock
+      }
 
       final isFront = cameraDescription.lensDirection == CameraLensDirection.front;
       // Auto mirror the overlay for front camera so user doesn't have to think about it

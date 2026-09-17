@@ -18,8 +18,12 @@ Future<String> cropToAspectRatio(
   }
 
   final bytes = await File(sourcePath).readAsBytes();
-  final original = img.decodeImage(bytes);
+  var original = img.decodeImage(bytes);
   if (original == null) return sourcePath; // fallback: keep original
+
+  // Crucial: rotate/flip pixel buffer according to EXIF orientation tag so
+  // image.width and image.height reflect true upright orientation before cropping.
+  original = img.bakeOrientation(original);
 
   final srcW = original.width;
   final srcH = original.height;

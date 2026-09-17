@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../features/camera/camera_screen.dart';
 import '../features/settings/providers/settings_provider.dart';
+import 'main_navigation_screen.dart';
 import 'theme.dart';
 
 class PoseMeApp extends ConsumerStatefulWidget {
@@ -32,7 +32,7 @@ class _PoseMeAppState extends ConsumerState<PoseMeApp> {
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: settings.themeMode,
-      home: const CameraScreen(),
+      home: const MainNavigationScreen(),
     );
   }
 }

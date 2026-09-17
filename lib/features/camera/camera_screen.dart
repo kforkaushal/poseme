@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../app/main_navigation_screen.dart';
 import '../../app/theme.dart';
-import '../gallery/gallery_screen.dart';
-import '../pose_library/widgets/pose_library_sheet.dart';
 import '../settings/providers/settings_provider.dart';
 import '../settings/settings_screen.dart';
 import 'providers/camera_provider.dart';
@@ -14,6 +13,7 @@ import 'widgets/camera_permission_view.dart';
 import 'widgets/camera_preview_widget.dart';
 import 'widgets/opacity_slider.dart';
 import 'widgets/overlay_layer.dart';
+import 'widgets/camera_quick_menu.dart';
 
 class CameraScreen extends ConsumerWidget {
   const CameraScreen({super.key});
@@ -49,18 +49,14 @@ class CameraScreen extends ConsumerWidget {
               icon: const Icon(Icons.crop_free_rounded),
               tooltip: 'Browse Poses',
               onPressed: () {
-                PoseLibrarySheet.show(context);
+                ref.read(navigationIndexProvider.notifier).state = 0;
               },
             ),
             IconButton(
               icon: const Icon(Icons.photo_outlined),
               tooltip: 'Gallery',
               onPressed: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) => const GalleryScreen(),
-                  ),
-                );
+                ref.read(navigationIndexProvider.notifier).state = 2;
               },
             ),
           ],
@@ -78,8 +74,9 @@ class CameraScreen extends ConsumerWidget {
       body: GestureDetector(
         behavior: HitTestBehavior.translucent,
         onTap: () {
-          // Touching viewfinder wakes up the opacity slider for 2 seconds
+          // Touching viewfinder wakes up the opacity slider and quick menu for 2 seconds
           ref.read(opacitySliderVisibilityProvider.notifier).show();
+          ref.read(quickMenuVisibilityProvider.notifier).show();
         },
         child: Stack(
           fit: StackFit.expand,

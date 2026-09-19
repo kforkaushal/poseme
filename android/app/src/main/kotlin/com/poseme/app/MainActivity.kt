@@ -1,4 +1,4 @@
-package com.example.poseme
+package com.poseme.app
 
 import io.flutter.embedding.android.FlutterActivity
 

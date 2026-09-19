@@ -43,14 +43,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final bgColor = isDark ? AppTheme.darkBgPrimary : AppTheme.lightBgPrimary;
-    final textColor =
-        isDark ? AppTheme.darkTextPrimary : AppTheme.lightTextPrimary;
-    final secondaryTextColor =
-        isDark ? AppTheme.darkTextSecondary : AppTheme.lightTextSecondary;
-    final borderColor =
-        isDark ? AppTheme.darkBorderHairline : AppTheme.lightBorderHairline;
-    final elevatedBg =
-        isDark ? AppTheme.darkBgElevated : AppTheme.lightBgElevated;
+    final textColor = isDark
+        ? AppTheme.darkTextPrimary
+        : AppTheme.lightTextPrimary;
+    final secondaryTextColor = isDark
+        ? AppTheme.darkTextSecondary
+        : AppTheme.lightTextSecondary;
+    final borderColor = isDark
+        ? AppTheme.darkBorderHairline
+        : AppTheme.lightBorderHairline;
+    final elevatedBg = isDark
+        ? AppTheme.darkBgElevated
+        : AppTheme.lightBgElevated;
 
     // Reset scroll to top when category or tags change
     ref.listen(selectedPoseCategoryProvider, (_, _) {
@@ -101,9 +105,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             tooltip: 'Settings',
             onPressed: () {
               Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => const SettingsScreen(),
-                ),
+                MaterialPageRoute(builder: (context) => const SettingsScreen()),
               );
             },
           ),
@@ -152,11 +154,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           isSelected: isSelected,
                           onTap: () {
                             ref
-                                .read(isLikedFilterActiveProvider.notifier)
-                                .state = false;
+                                    .read(isLikedFilterActiveProvider.notifier)
+                                    .state =
+                                false;
                             ref
-                                .read(selectedPoseCategoryProvider.notifier)
-                                .state = category;
+                                    .read(selectedPoseCategoryProvider.notifier)
+                                    .state =
+                                category;
                           },
                           textColor: textColor,
                           secondaryTextColor: secondaryTextColor,
@@ -187,7 +191,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     return GestureDetector(
                       onTap: () {
                         final current = Set<String>.from(
-                            ref.read(selectedPoseTagsProvider));
+                          ref.read(selectedPoseTagsProvider),
+                        );
                         if (isSelected) {
                           current.remove(tag);
                         } else {
@@ -313,7 +318,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                     ? Icons.favorite_border_rounded
                                     : Icons.filter_alt_outlined,
                                 size: 48,
-                                color: secondaryTextColor.withValues(alpha: 0.6),
+                                color: secondaryTextColor.withValues(
+                                  alpha: 0.6,
+                                ),
                               ),
                               const SizedBox(height: 12),
                               Text(
@@ -353,8 +360,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       ),
                       gridDelegate:
                           const SliverSimpleGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2,
-                      ),
+                            crossAxisCount: 2,
+                          ),
                       mainAxisSpacing: 8,
                       crossAxisSpacing: 8,
                       itemCount: poses.length + 1,
@@ -370,8 +377,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         }
 
                         final pose = poses[index - 1];
-                        final isPoseSelected =
-                            selectedPoses.any((p) => p.id == pose.id);
+                        final isPoseSelected = selectedPoses.any(
+                          (p) => p.id == pose.id,
+                        );
 
                         return _HomePoseTile(
                           pose: pose,
@@ -455,9 +463,7 @@ class _CategoryPill extends StatelessWidget {
         decoration: BoxDecoration(
           color: isSelected ? textColor : elevatedBg,
           borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
-          border: Border.all(
-            color: isSelected ? textColor : borderColor,
-          ),
+          border: Border.all(color: isSelected ? textColor : borderColor),
         ),
         alignment: Alignment.center,
         child: Row(
@@ -580,10 +586,7 @@ class _HomeGalleryTile extends ConsumerWidget {
               Text(
                 'Use own photo',
                 textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 11,
-                  color: secondaryTextColor,
-                ),
+                style: TextStyle(fontSize: 11, color: secondaryTextColor),
               ),
             ],
           ),
@@ -651,8 +654,7 @@ class _HomePoseTile extends ConsumerWidget {
             children: [
               // Grayscale thumbnail
               ColorFiltered(
-                colorFilter:
-                    const ColorFilter.matrix(AppTheme.grayscaleMatrix),
+                colorFilter: const ColorFilter.matrix(AppTheme.grayscaleMatrix),
                 child: pose.isNetworkImage
                     ? CachedNetworkImage(
                         imageUrl: pose.networkThumbnailUrl!,
@@ -669,18 +671,13 @@ class _HomePoseTile extends ConsumerWidget {
                       )
                     : Padding(
                         padding: const EdgeInsets.all(8),
-                        child: Image.asset(
-                          pose.assetPath,
-                          fit: BoxFit.contain,
-                        ),
+                        child: Image.asset(pose.assetPath, fit: BoxFit.contain),
                       ),
               ),
 
               // Dim overlay when selected in multi-select mode
               if (isPoseSelected)
-                Container(
-                  color: Colors.black.withValues(alpha: 0.35),
-                ),
+                Container(color: Colors.black.withValues(alpha: 0.35)),
 
               // Selection checkmark (top-left)
               if (isSelectionMode)
@@ -695,17 +692,10 @@ class _HomePoseTile extends ConsumerWidget {
                       color: isPoseSelected
                           ? Colors.white
                           : Colors.black.withValues(alpha: 0.55),
-                      border: Border.all(
-                        color: Colors.white,
-                        width: 1.5,
-                      ),
+                      border: Border.all(color: Colors.white, width: 1.5),
                     ),
                     child: isPoseSelected
-                        ? const Icon(
-                            Icons.check,
-                            size: 16,
-                            color: Colors.black,
-                          )
+                        ? const Icon(Icons.check, size: 16, color: Colors.black)
                         : null,
                   ),
                 ),
@@ -750,8 +740,9 @@ class _HomePoseTile extends ConsumerWidget {
                     horizontal: 8,
                     vertical: 5,
                   ),
-                  color: (isDark ? Colors.black : Colors.white)
-                      .withValues(alpha: 0.80),
+                  color: (isDark ? Colors.black : Colors.white).withValues(
+                    alpha: 0.80,
+                  ),
                   child: Text(
                     toTitleCase(
                       pose.isNetworkImage
@@ -763,8 +754,9 @@ class _HomePoseTile extends ConsumerWidget {
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 10,
-                      fontWeight:
-                          isPoseSelected ? FontWeight.bold : FontWeight.w500,
+                      fontWeight: isPoseSelected
+                          ? FontWeight.bold
+                          : FontWeight.w500,
                       color: textColor,
                     ),
                   ),
@@ -780,8 +772,9 @@ class _HomePoseTile extends ConsumerWidget {
   Widget _tileShimmer(bool isDark, Color elevatedBg) {
     return Shimmer.fromColors(
       baseColor: isDark ? const Color(0xFF16181D) : const Color(0xFFE5E5E7),
-      highlightColor:
-          isDark ? const Color(0xFF22262F) : const Color(0xFFF2F2F4),
+      highlightColor: isDark
+          ? const Color(0xFF22262F)
+          : const Color(0xFFF2F2F4),
       child: Container(color: elevatedBg),
     );
   }
@@ -879,8 +872,9 @@ class _HomeShimmerGrid extends StatelessWidget {
   Widget build(BuildContext context) {
     return Shimmer.fromColors(
       baseColor: isDark ? const Color(0xFF16181D) : const Color(0xFFE5E5E7),
-      highlightColor:
-          isDark ? const Color(0xFF22262F) : const Color(0xFFF2F2F4),
+      highlightColor: isDark
+          ? const Color(0xFF22262F)
+          : const Color(0xFFF2F2F4),
       child: MasonryGridView.builder(
         controller: scrollController,
         physics: const NeverScrollableScrollPhysics(),

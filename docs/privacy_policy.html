@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Privacy Policy - Pose Me!</title>
+    <meta name="description" content="Privacy Policy for Pose Me! - Camera Pose Guide application. Learn how your data and privacy are protected.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0A0D14;
+            --bg-secondary: #111726;
+            --bg-card: rgba(22, 30, 48, 0.7);
+            --border-color: rgba(255, 255, 255, 0.08);
+            --text-primary: #F3F4F6;
+            --text-secondary: #9CA3AF;
+            --text-muted: #6B7280;
+            --accent-primary: #6366F1;
+            --accent-glow: rgba(99, 102, 241, 0.25);
+            --accent-gradient: linear-gradient(135deg, #6366F1 0%, #A855F7 50%, #EC4899 100%);
+            --badge-bg: rgba(99, 102, 241, 0.12);
+            --badge-border: rgba(99, 102, 241, 0.3);
+            --success-color: #10B981;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.7;
+            padding: 0;
+            margin: 0;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Ambient Glow Background */
+        .ambient-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: -1;
+            background: 
+                radial-gradient(circle at 15% 15%, rgba(99, 102, 241, 0.12) 0%, transparent 40%),
+                radial-gradient(circle at 85% 25%, rgba(168, 85, 247, 0.10) 0%, transparent 45%),
+                radial-gradient(circle at 50% 85%, rgba(236, 72, 153, 0.08) 0%, transparent 50%);
+        }
+
+        .container {
+            max-width: 880px;
+            margin: 0 auto;
+            padding: 48px 24px 96px;
+        }
+
+        /* Header */
+        header {
+            text-align: center;
+            margin-bottom: 48px;
+            padding-bottom: 36px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .app-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 16px;
+            border-radius: 9999px;
+            background: var(--badge-bg);
+            border: 1px solid var(--badge-border);
+            color: #A5B4FC;
+            font-size: 0.85rem;
+            font-weight: 600;
+            letter-spacing: 0.03em;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+        }
+
+        .app-badge .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--success-color);
+            box-shadow: 0 0 8px var(--success-color);
+        }
+
+        h1 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 2.75rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            margin-bottom: 12px;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .meta-info {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .meta-info span {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* Quick Highlights Card */
+        .summary-card {
+            background: var(--bg-card);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 28px 32px;
+            margin-bottom: 44px;
+            box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.5);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .summary-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: var(--accent-gradient);
+        }
+
+        .summary-card h3 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.15rem;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #E0E7FF;
+        }
+
+        .summary-card p {
+            color: var(--text-secondary);
+            font-size: 0.96rem;
+            line-height: 1.65;
+            margin: 0;
+        }
+
+        /* Policy Sections */
+        .policy-section {
+            background: var(--bg-card);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 32px;
+            margin-bottom: 28px;
+            transition: transform 0.2s ease, border-color 0.2s ease;
+        }
+
+        .policy-section:hover {
+            border-color: rgba(99, 102, 241, 0.3);
+        }
+
+        h2 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.45rem;
+            font-weight: 600;
+            color: #FFFFFF;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        h2 .section-num {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            border-radius: 10px;
+            background: var(--badge-bg);
+            border: 1px solid var(--badge-border);
+            color: #A5B4FC;
+            font-size: 0.88rem;
+            font-weight: 700;
+        }
+
+        p {
+            color: var(--text-secondary);
+            font-size: 0.96rem;
+            margin-bottom: 16px;
+        }
+
+        p:last-child {
+            margin-bottom: 0;
+        }
+
+        ul {
+            list-style: none;
+            padding-left: 0;
+            margin-bottom: 16px;
+        }
+
+        li {
+            position: relative;
+            padding-left: 28px;
+            margin-bottom: 12px;
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            top: 1px;
+            color: var(--success-color);
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+
+        /* Table */
+        .table-wrapper {
+            overflow-x: auto;
+            margin: 20px 0;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+            text-align: left;
+        }
+
+        th {
+            background: rgba(255, 255, 255, 0.04);
+            color: #E0E7FF;
+            font-weight: 600;
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        td {
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-secondary);
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        code {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            background: rgba(255, 255, 255, 0.08);
+            padding: 2px 8px;
+            border-radius: 6px;
+            color: #C7D2FE;
+            font-size: 0.85rem;
+        }
+
+        /* Contact Box */
+        .contact-box {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.08) 0%, rgba(168, 85, 247, 0.08) 100%);
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            border-radius: 16px;
+            padding: 24px;
+            margin-top: 16px;
+        }
+
+        .contact-box a {
+            color: #A5B4FC;
+            text-decoration: none;
+            font-weight: 600;
+            border-bottom: 1px dashed #A5B4FC;
+            transition: color 0.2s ease;
+        }
+
+        .contact-box a:hover {
+            color: #FFFFFF;
+            border-bottom-style: solid;
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            margin-top: 64px;
+            padding-top: 32px;
+            border-top: 1px solid var(--border-color);
+            color: var(--text-muted);
+            font-size: 0.88rem;
+        }
+
+        @media (max-width: 640px) {
+            .container {
+                padding: 32px 16px 64px;
+            }
+
+            h1 {
+                font-size: 2.1rem;
+            }
+
+            .policy-section {
+                padding: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="ambient-bg"></div>
+
+    <div class="container">
+        <header>
+            <div class="app-badge">
+                <span class="dot"></span>
+                Official Policy
+            </div>
+            <h1>Privacy Policy</h1>
+            <div class="meta-info">
+                <span><strong>App:</strong> Pose Me! - Camera Pose Guide</span>
+                <span>•</span>
+                <span><strong>Package:</strong> <code>com.poseme.app</code></span>
+                <span>•</span>
+                <span><strong>Effective Date:</strong> September 19, 2026</span>
+            </div>
+        </header>
+
+        <!-- Quick Summary Box -->
+        <div class="summary-card">
+            <h3>🛡️ Privacy at a Glance</h3>
+            <p>
+                <strong>Pose Me!</strong> is built with a strict <strong>offline-first, privacy-by-design architecture</strong>. 
+                We do not collect, track, store, or sell any of your personal data, images, or camera feeds. 
+                All photo captures, pose outlines, sketch generation, and aspect ratio cropping occur 100% locally on your device.
+            </p>
+        </div>
+
+        <!-- Section 1 -->
+        <div class="policy-section">
+            <h2><span class="section-num">1</span> Information We Collect (Or Don't Collect)</h2>
+            <p>
+                We believe your private photos should remain strictly private. When using Pose Me!:
+            </p>
+            <ul>
+                <li><strong>No User Accounts:</strong> You are not required to create an account, register, or provide personal details (name, phone number, email address).</li>
+                <li><strong>No Image Uploads:</strong> Photos captured through the app, live viewfinder previews, and imported gallery images never leave your device. We do not operate cloud servers for image storage.</li>
+                <li><strong>No Behavioral Tracking:</strong> We do not track user browsing habits, screen interactions, or pose usage patterns.</li>
+                <li><strong>No Advertising Trackers:</strong> The application does not integrate third-party ad networks or data broker SDKs.</li>
+            </ul>
+        </div>
+
+        <!-- Section 2 -->
+        <div class="policy-section">
+            <h2><span class="section-num">2</span> Device Permissions & How They Are Used</h2>
+            <p>
+                To provide camera pose guidance and saving functionality, Pose Me! requests specific Android permissions strictly for app functionality:
+            </p>
+
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Permission</th>
+                            <th>Technical Purpose</th>
+                            <th>Data Shared?</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>CAMERA</code></td>
+                            <td>Renders the live camera viewfinder and captures photos with interactive pose guide overlays.</td>
+                            <td><strong>Never</strong> (processed strictly on-device)</td>
+                        </tr>
+                        <tr>
+                            <td><code>INTERNET</code></td>
+                            <td>Fetches curated, public pose reference photos and inspirations from the Pexels API.</td>
+                            <td><strong>None</strong> (only fetches public image URLs)</td>
+                        </tr>
+                        <tr>
+                            <td><code>WRITE_EXTERNAL_STORAGE</code></td>
+                            <td>Saves captured and cropped photos directly to your device's picture gallery (Android 9 and below).</td>
+                            <td><strong>Never</strong> (stored only on local device storage)</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Section 3 -->
+        <div class="policy-section">
+            <h2><span class="section-num">3</span> On-Device Processing & Machine Intelligence</h2>
+            <p>
+                All image processing features operate completely offline inside background worker threads (Dart Isolates):
+            </p>
+            <ul>
+                <li><strong>Artistic Sketch Generation:</strong> Edge contour detection and silhouette extraction are executed entirely by local image processing algorithms on your phone's processor.</li>
+                <li><strong>Aspect Ratio Cropping & Watermarking:</strong> High-resolution bicubic resizing, square/portrait/cinematic cropping, and brand watermark compositing occur purely in local memory.</li>
+                <li><strong>Local Disk Caching:</strong> Downloaded reference poses and computed sketches are cached locally in your application's private storage directory for instant offline access and can be cleared at any time.</li>
+            </ul>
+        </div>
+
+        <!-- Section 4 -->
+        <div class="policy-section">
+            <h2><span class="section-num">4</span> Third-Party Services</h2>
+            <p>
+                Pose Me! interacts with a single third-party service solely to deliver pose inspiration content:
+            </p>
+            <ul>
+                <li>
+                    <strong>Pexels API:</strong> Curated royalty-free reference poses are retrieved via public HTTPS queries to the Pexels API. 
+                    No user personal information is sent to Pexels. Use of reference images complies with Pexels' content license terms.
+                </li>
+            </ul>
+        </div>
+
+        <!-- Section 5 -->
+        <div class="policy-section">
+            <h2><span class="section-num">5</span> Children's Privacy (COPPA & GDPR Compliance)</h2>
+            <p>
+                Pose Me! does not target or knowingly collect personal identifiable information from children under the age of 13 (or under 16 in the European Union). 
+                Because the app collects zero personal data from any user, it is fully compliant with the Children's Online Privacy Protection Act (COPPA) and General Data Protection Regulation (GDPR).
+            </p>
+        </div>
+
+        <!-- Section 6 -->
+        <div class="policy-section">
+            <h2><span class="section-num">6</span> Data Retention & Deletion</h2>
+            <p>
+                Because we do not collect or store user data on remote servers, there is no remote data retention. 
+                Any photos captured or saved in the app reside in your device's local gallery or application cache. 
+                You have 100% control over your photos and can delete them at any time using your device's default Gallery app or by uninstalling the application.
+            </p>
+        </div>
+
+        <!-- Section 7 -->
+        <div class="policy-section">
+            <h2><span class="section-num">7</span> Changes to This Privacy Policy</h2>
+            <p>
+                We may periodically update our Privacy Policy to reflect future feature updates or legal regulations. 
+                Any modifications will be updated on this page with a revised "Effective Date". 
+                We recommend checking this page occasionally to stay informed about our privacy practices.
+            </p>
+        </div>
+
+        <!-- Section 8 -->
+        <div class="policy-section">
+            <h2><span class="section-num">8</span> Contact Us</h2>
+            <p>
+                If you have any questions, suggestions, or concerns regarding this Privacy Policy or how Pose Me! respects your privacy, please reach out to the developer:
+            </p>
+            <div class="contact-box">
+                <p><strong>Developer:</strong> Kaushal Patil</p>
+                <p><strong>App:</strong> Pose Me! - Camera Pose Guide (<code>com.poseme.app</code>)</p>
+                <p><strong>Email:</strong> <a href="mailto:bitbuster32@gmail.com">bitbuster32@gmail.com</a></p>
+            </div>
+        </div>
+
+        <footer>
+            <p>© 2026 Pose Me! All rights reserved.</p>
+            <p>Designed with care for creators & photographers worldwide.</p>
+        </footer>
+    </div>
+</body>
+</html>
